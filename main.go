@@ -1,17 +1,34 @@
 package main
 
 import (
+	"distributedqueue/broker"
 	"distributedqueue/models"
 	"fmt"
 )
 
 func main() {
-	msg := models.Message{
+
+	b := broker.NewBroker()
+
+	b.CreateTopic("orders")
+
+	msg1 := models.Message{
 		ID:        1,
 		Key:       "order_101",
 		Value:     "Pizza",
-		Timestamp: 1720953000,
+		Timestamp: 109,
 	}
 
-	fmt.Println(msg)
+	msg2 := models.Message{
+		ID:        2,
+		Key:       "order_102",
+		Value:     "Pasta",
+		Timestamp: 110,
+	}
+
+	b.Publish("orders", msg1)
+	b.Publish("orders", msg2)
+
+	fmt.Println(b.Consume("orders"))
+	fmt.Println(b.Consume("orders"))
 }
