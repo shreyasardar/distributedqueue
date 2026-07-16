@@ -1,34 +1,16 @@
 package main
 
-import (
-	"distributedqueue/broker"
-	"distributedqueue/models"
-	"fmt"
-)
+import "github.com/gin-gonic/gin"
 
 func main() {
 
-	b := broker.NewBroker()
+	router := gin.Default()
 
-	b.CreateTopic("orders")
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 
-	msg1 := models.Message{
-		ID:        1,
-		Key:       "order_101",
-		Value:     "Pizza",
-		Timestamp: 109,
-	}
-
-	msg2 := models.Message{
-		ID:        2,
-		Key:       "order_102",
-		Value:     "Pasta",
-		Timestamp: 110,
-	}
-
-	b.Publish("orders", msg1)
-	b.Publish("orders", msg2)
-
-	fmt.Println(b.Consume("orders"))
-	fmt.Println(b.Consume("orders"))
+	router.Run(":8080")
 }
