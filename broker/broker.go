@@ -7,11 +7,13 @@ import (
 
 type Broker struct {
 	Topics map[string]*topic.Topic
+	NextID int64
 }
 
 func NewBroker() *Broker {
 	return &Broker{
 		Topics: make(map[string]*topic.Topic),
+		NextID: 1,
 	}
 }
 
@@ -39,6 +41,9 @@ func (b *Broker) Publish(topicName string, msg models.Message) bool {
 	if !ok {
 		return false
 	}
+
+	msg.ID = b.NextID
+	b.NextID++
 
 	topic.Queue.Enqueue(msg)
 

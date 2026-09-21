@@ -3,6 +3,7 @@ package api
 import (
 	"distributedqueue/broker"
 	"distributedqueue/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,8 +36,9 @@ func (s *Server) PublishHandler(c *gin.Context) {
 	}
 
 	msg := models.Message{
-		Key:   req.Key,
-		Value: req.Value,
+		Key:       req.Key,
+		Value:     req.Value,
+		Timestamp: time.Now().Unix(),
 	}
 
 	success := s.Broker.Publish(req.Topic, msg)
