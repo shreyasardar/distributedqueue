@@ -1,8 +1,8 @@
 package queue
 
 import (
-	"distributedqueue/models"
 	"fmt"
+	"gominimq/models"
 	"sync"
 )
 

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"distributedqueue/broker"
-	"distributedqueue/models"
+	"gominimq/broker"
+	"gominimq/models"
 	"time"
 
 	"github.com/gin-gonic/gin"

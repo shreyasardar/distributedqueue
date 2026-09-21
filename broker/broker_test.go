@@ -1,15 +1,26 @@
 package broker
 
 import (
-	"distributedqueue/models"
+	"gominimq/models"
 	"sync"
 	"testing"
 )
 
 func TestConcurrentPublish(t *testing.T) {
-	b := NewBroker()
+	dataDir := t.TempDir()
+	b := NewBroker(dataDir)
 
-	b.CreateTopic("orders")
+	err := b.CreateTopic("orders")
+	if err != nil {
+		t.Fatalf("failed to create topic: %v", err)
+	}
+
+	topic, ok := b.GetTopic("orders")
+
+	if !ok {
+		t.Fatal("orders topic not found")
+	}
+	defer topic.Log.Close()
 
 	var wg sync.WaitGroup
 
@@ -29,12 +40,6 @@ func TestConcurrentPublish(t *testing.T) {
 
 	wg.Wait()
 
-	topic, ok := b.GetTopic("orders")
-
-	if !ok {
-		t.Fatal("orders topic not found")
-	}
-
 	if topic.Queue.Size() != 100 {
 		t.Errorf("expected 100 messages, got %d", topic.Queue.Size())
 
@@ -51,5 +56,51 @@ func TestConcurrentPublish(t *testing.T) {
 	}
 	if len(ids) != 100 {
 		t.Errorf("expected 100 unique IDs, got %d", len(ids))
+	}
+}
+
+func TestPublishPersistsMessage(t *testing.T) {
+
+	dataDir := t.TempDir()
+	b := NewBroker(dataDir)
+
+	err := b.CreateTopic("orders")
+	if err != nil {
+		t.Fatalf("failed to create topic: %v", err)
+	}
+
+	topic, ok := b.GetTopic("orders")
+	if !ok {
+		t.Fatal("orders topic not found")
+	}
+	defer topic.Log.Close()
+
+	msg := models.Message{
+		Key:       "user1",
+		Value:     "hello",
+		Timestamp: 123456,
+	}
+
+	success := b.Publish("orders", msg)
+
+	if !success {
+		t.Fatal("expected publish to succeed")
+	}
+
+	messages, err := topic.Log.ReadAll()
+	if err != nil {
+		t.Fatalf("failed to read persisted messages: %v", err)
+	}
+
+	if len(messages) != 1 {
+		t.Fatalf("expected 1 persisted message, got %d", len(messages))
+	}
+
+	if messages[0].Value != "hello" {
+		t.Errorf("expected value %q, got %q", "hello", messages[0].Value)
+	}
+
+	if messages[0].Key != "user1" {
+		t.Errorf("expected key %q, got %q", "user1", messages[0].Key)
 	}
 }

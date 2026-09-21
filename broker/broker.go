@@ -1,30 +1,42 @@
 package broker
 
 import (
-	"distributedqueue/models"
-	"distributedqueue/topic"
+	"gominimq/models"
+	"gominimq/topic"
+	"path/filepath"
 	"sync"
 )
 
 type Broker struct {
-	Topics map[string]*topic.Topic
-	NextID int64
-	mu     sync.Mutex
+	Topics  map[string]*topic.Topic
+	NextID  int64
+	DataDir string
+	mu      sync.Mutex
 }
 
-func NewBroker() *Broker {
+func NewBroker(dataDir string) *Broker {
 	return &Broker{
-		Topics: make(map[string]*topic.Topic),
-		NextID: 1,
+		Topics:  make(map[string]*topic.Topic),
+		NextID:  1,
+		DataDir: dataDir,
 	}
 }
 
-func (b *Broker) CreateTopic(name string) {
+func (b *Broker) CreateTopic(name string) error {
 	if _, exists := b.Topics[name]; exists {
-		return
+		return nil
 	}
 
-	b.Topics[name] = topic.NewTopic(name)
+	logFilename := filepath.Join(b.DataDir, name+".log")
+
+	t, err := topic.NewTopic(name, logFilename)
+	if err != nil {
+		return err
+	}
+
+	b.Topics[name] = t
+
+	return nil
 }
 
 func (b *Broker) GetTopic(name string) (*topic.Topic, bool) {
@@ -50,6 +62,11 @@ func (b *Broker) Publish(topicName string, msg models.Message) bool {
 	b.NextID++
 
 	b.mu.Unlock()
+
+	err := topic.Log.Append(msg)
+	if err != nil {
+		return false
+	}
 
 	topic.Queue.Enqueue(msg)
 

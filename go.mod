@@ -1,4 +1,4 @@
-module distributedqueue
+module gominimq
 
 go 1.26.5
 

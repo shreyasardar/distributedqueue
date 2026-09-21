@@ -1,8 +1,8 @@
 package main
 
 import (
-	"distributedqueue/api"
-	"distributedqueue/broker"
+	"gominimq/api"
+	"gominimq/broker"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,9 +10,12 @@ import (
 func main() {
 
 	// Create broker
-	b := broker.NewBroker()
+	b := broker.NewBroker("data")
 
-	b.CreateTopic("orders")
+	err := b.CreateTopic("orders")
+	if err != nil {
+		panic(err)
+	}
 
 	// Create API server using the broker
 	server := api.NewServer(b)

@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"distributedqueue/models"
+	"gominimq/models"
 	"sync"
 	"testing"
 )
