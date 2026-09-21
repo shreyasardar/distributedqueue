@@ -39,7 +39,14 @@ func (s *Server) PublishHandler(c *gin.Context) {
 		Value: req.Value,
 	}
 
-	s.Broker.Publish(req.Topic, msg)
+	success := s.Broker.Publish(req.Topic, msg)
+
+	if !success {
+		c.JSON(404, gin.H{
+			"error": "Topic not found",
+		})
+		return
+	}
 
 	c.JSON(200, gin.H{
 		"message": "Message published successfully",

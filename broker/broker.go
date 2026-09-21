@@ -33,14 +33,16 @@ func (b *Broker) GetTopic(name string) (*topic.Topic, bool) {
 	return t, true
 }
 
-func (b *Broker) Publish(topicName string, msg models.Message) {
+func (b *Broker) Publish(topicName string, msg models.Message) bool {
 	topic, ok := b.GetTopic(topicName)
 
 	if !ok {
-		return
+		return false
 	}
 
 	topic.Queue.Enqueue(msg)
+
+	return true
 }
 
 func (b *Broker) Consume(topicName string) *models.Message {
