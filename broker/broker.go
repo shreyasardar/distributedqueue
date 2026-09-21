@@ -3,11 +3,13 @@ package broker
 import (
 	"distributedqueue/models"
 	"distributedqueue/topic"
+	"sync"
 )
 
 type Broker struct {
 	Topics map[string]*topic.Topic
 	NextID int64
+	mu     sync.Mutex
 }
 
 func NewBroker() *Broker {
@@ -42,8 +44,12 @@ func (b *Broker) Publish(topicName string, msg models.Message) bool {
 		return false
 	}
 
+	b.mu.Lock()
+
 	msg.ID = b.NextID
 	b.NextID++
+
+	b.mu.Unlock()
 
 	topic.Queue.Enqueue(msg)
 
