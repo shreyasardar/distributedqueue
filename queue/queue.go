@@ -3,10 +3,12 @@ package queue
 import (
 	"distributedqueue/models"
 	"fmt"
+	"sync"
 )
 
 type Queue struct {
 	Messages []models.Message
+	mu       sync.Mutex
 }
 
 func NewQueue() *Queue {
@@ -16,10 +18,16 @@ func NewQueue() *Queue {
 }
 
 func (q *Queue) Enqueue(msg models.Message) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
 	q.Messages = append(q.Messages, msg)
 }
 
 func (q *Queue) Dequeue() *models.Message {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
 	if len(q.Messages) == 0 {
 		return nil
 	}
@@ -31,6 +39,9 @@ func (q *Queue) Dequeue() *models.Message {
 }
 
 func (q *Queue) Peek() *models.Message {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
 	if len(q.Messages) == 0 {
 		return nil
 	}
@@ -39,14 +50,23 @@ func (q *Queue) Peek() *models.Message {
 }
 
 func (q *Queue) Size() int {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
 	return len(q.Messages)
 }
 
 func (q *Queue) IsEmpty() bool {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
 	return len(q.Messages) == 0
 }
 
 func (q *Queue) Print() {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
 	fmt.Println("Queue Messages:")
 	fmt.Println("----------------")
 
